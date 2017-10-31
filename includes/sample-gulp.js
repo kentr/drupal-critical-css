@@ -1,31 +1,3 @@
-# Critical CSS
-
-Inlines a critical CSS file in HTML head, and loads non-critical CSS asynchronously using W3C Spec's preload.
-
-## How it works ##
- * This module looks for a css file inside your theme directory. This css filename should match any of:
-    * bundle type (i.e., "article.css")
-    * entity id (i.e., "123.css")
-    * url (i.e., "my-article.css")
- * If any of the above paths is found, this module loads the CSS file contents inside a _style_ tag placed in the HTML head.
- * Any other CSS file used in HTML head is loaded using [preload](https://www.w3.org/TR/preload/). For browsers not supporting this preload feature, a polyfill is provided.
-
-### Gulp task for generating a css file ###
-Before this module can do anything, you should generate a css file containing the critical css for any:
- * bundle type
- * entity id 
- * url
- 
-This can be acheived by running a Gulp task to automatically extract the critical css of any page.
-Using Addy Osmani's [critical](https://github.com/addyosmani/critical) package is highly recommended.
- 
-Another option is [Filament Group's criticalCSS](https://github.com/filamentgroup/criticalCSS)
- 
-The extracted critical css must be saved in a directory inside the current theme.
- 
-#### Sample gulp task using Addy Osmani's critical  ####
-
-```javascript
 var gulp = require('gulp');
 var fs = require('fs');
 var path = require('path');
@@ -100,12 +72,3 @@ gulp.task('critical:clean', function (done) {
     return done();
   });
 });
-
-```
-
-### Module configuration ###
-Module must be enabled in /admin/config/development/performance/critical-css. This allows for easy enabling/disabling without uninstalling it.
-
-
-## Limitations ##
-This module works only for anonymous users, because its main goal is to speed the load of public pages already cached. Further versions will make possible to use it with logged users.
