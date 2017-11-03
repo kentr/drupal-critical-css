@@ -71,14 +71,29 @@ gulp.task('critical', ['critical:clean'], function (done) {
   'use strict';
   Object.keys(config.critical.urls).map(function (url, index) {
     var pageUrl = urljoin(configLocal.critical.baseDomain, url);
-    var destCssPath = path.join(process.cwd(), config.critical.dest, config.critical.urls[url] + '.css');
+    var destCssPath = path.join(
+      process.cwd(), 
+      config.critical.dest, 
+      config.critical.urls[url] + '.css'
+      );
 
     return rp({uri: pageUrl, strictSSL: false}).then(function (body) {
       var htmlString = body
-        .replace(/href="\//g, 'href="' + urljoin(configLocal.critical.baseDomain, '/'))
-        .replace(/src="\//g, 'src="' + urljoin(configLocal.critical.baseDomain, '/'));
+        .replace(
+          /href="\//g, 
+          'href="' + urljoin(configLocal.critical.baseDomain, '/')
+          )
+        .replace(
+          /src="\//g, 
+          'src="' + urljoin(configLocal.critical.baseDomain, '/')
+          );
 
-      gutil.log('Generating critical css', gutil.colors.magenta(destCssPath), 'from', pageUrl);
+      gutil.log(
+        'Generating critical css', 
+        gutil.colors.magenta(destCssPath), 
+        'from', 
+        pageUrl
+        );
 
       critical.generate({
         base: osTmpdir(),
@@ -102,7 +117,11 @@ gulp.task('critical', ['critical:clean'], function (done) {
 gulp.task('critical:clean', function (done) {
   'use strict';
   return rimraf(config.critical.dest, function () {
-    gutil.log('Critical directory', gutil.colors.magenta(config.critical.dest), 'deleted');
+    gutil.log(
+      'Critical directory', 
+      gutil.colors.magenta(config.critical.dest), 
+      'deleted'
+      );
     return done();
   });
 });
