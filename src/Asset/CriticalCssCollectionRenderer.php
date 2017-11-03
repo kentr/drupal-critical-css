@@ -40,9 +40,8 @@ class CriticalCssCollectionRenderer extends CssCollectionRenderer {
       }
 
       // Add Filament Group's loadCSS (https://github.com/filamentgroup/loadCSS)
-      $themePath = drupal_get_path('module', 'critical_css');
-      $loadCSSContent = file_get_contents($themePath . '/includes/loadCSS/loadCSS.min.js');
-      $polyfillContent = file_get_contents($themePath . '/includes/loadCSS/cssrelpreload.min.js');
+      $loadCSSContent = file_get_contents('public://critical_css/loadCSS.min.js');
+      $polyfillContent = file_get_contents('public://critical_css/cssrelpreload.min.js');
       $elements[] = [
         '#markup' => Markup::create(
           '<script>' . $loadCSSContent . $polyfillContent . '</script>'

@@ -30,24 +30,46 @@ class CriticalCssSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('critical_css.settings');
 
+    if (!is_file('public://critical_css/loadCSS.min.js') ||
+        !is_file('public://critical_css/cssrelpreload.min.js')) {
+      drupal_set_message(
+        $this->t(
+          'Some Critical CSS libraries are missing. You should manually download Filament Group\'s <a href="@url1">loadCSS.min.js</a> and <a href="@url1">cssrelpreload.min.js</a> and place them into public://critical_css (typically sites/default/files/critical_css)',
+          [
+            '@url1' => 'https://github.com/filamentgroup/loadCSS/releases/download/v1.3.1/loadCSS.min.js',
+            '@url2' => 'https://github.com/filamentgroup/loadCSS/releases/download/v1.3.1/cssrelpreload.min.js',
+          ]
+        ),
+        'error'
+      );
+
+    }
+
     $form['critical_css_enabled'] = [
       '#type' => 'checkbox',
-      '#title' => t('Enabled'),
+      '#title' => $this->t('Enabled'),
       '#default_value' => $config->get('enabled'),
-      '#description' => t("Enable critical CSS for all anonymous visits. You must manually rebuild Drupal cache when this value changes"),
+      '#description' => $this->t("Enable Critical CSS. You must manually rebuild Drupal cache when this value changes."),
+    ];
+
+    $form['critical_css_enabled_for_logged_in_users'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enabled for logged-in users'),
+      '#default_value' => $config->get('enabled_for_logged_in_users'),
+      '#description' => $this->t("This option will enable Critical CSS for logged-in users. Since the contents of the critical CSS files are generated emulating an anonymous visit, it is recommended to not enable it for logged-in users."),
     ];
 
     $form['critical_css_help'] = [
       '#type' => 'details',
       '#open' => TRUE,
-      '#title' => t('First, generate critical CSS files'),
-      '#description' => t("You MUST previously generate a critical CSS file for any bundle type or entity id you want to process. Using <a href=\"https://github.com/addyosmani/critical\" target='_blank'><strong>Addy Osmani's <em>critical</em></strong></a> or <a href=\"https://github.com/filamentgroup/criticalCSS\" target='_blank'><strong>Filament Group's criticalCSS</strong></a> is highly recommended:"),
+      '#title' => $this->t('First, generate critical CSS files'),
+      '#description' => $this->t("You MUST previously generate a critical CSS file for any bundle type or entity id you want to process. Using <a href=\"https://github.com/addyosmani/critical\" target='_blank'><strong>Addy Osmani's <em>critical</em></strong></a> or <a href=\"https://github.com/filamentgroup/criticalCSS\" target='_blank'><strong>Filament Group's criticalCSS</strong></a> is highly recommended:"),
     ];
 
     $form['critical_css_help']['gulp'] = [
       '#type' => 'details',
       '#open' => FALSE,
-      '#title' => t("Addy Osmani's critical gulp task example"),
+      '#title' => $this->t("Addy Osmani's critical gulp task example"),
     ];
 
     $form['critical_css_help']['gulp']['example'] = [
@@ -56,17 +78,17 @@ class CriticalCssSettingsForm extends ConfigFormBase {
 
     $form['critical_css_dir_path'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Critical CSS files base directory (relative to %theme_path)', ['%theme_path' => drupal_get_path('theme', \Drupal::config('system.theme')->get('default'))]),
+      '#title' => $this->t('Critical CSS files base directory (relative to %theme_path)', ['%theme_path' => drupal_get_path('theme', $this->config('system.theme')->get('default'))]),
       '#required' => TRUE,
-      '#description' => t('Enter a directory path relative to current theme, where critical CSS files are located (e.g., dist/css/critical). Inside that directory, "Critical CSS" will try to find any file named "{bundle_type}.css" or "{entity_id}.css" (e.g., article.css, page.css, 1234.css etc)'),
+      '#description' => $this->t('Enter a directory path relative to current theme, where critical CSS files are located (e.g., css/critical). Inside that directory, "Critical CSS" will try to find any file named "{bundle_type}.css", "{entity_id}.css" or "{url}.css" (e.g., article.css, 1234.css, my-page-url.css, etc)'),
       '#default_value' => $config->get('dir_path'),
     ];
 
     $form['critical_css_excluded_ids'] = [
       '#type' => 'textarea',
-      '#title' => $this->t('Exclude entity ids from critical CSS processing'),
+      '#title' => $this->t('Exclude entity ids from Critical CSS processing'),
       '#required' => FALSE,
-      '#description' => t('Enter ids of entities (one per line) which should not be processed. These entities will load standard CSS (synchronously).'),
+      '#description' => $this->t('Enter ids of entities (one per line) which should not be processed. These entities will load standard CSS (synchronously).'),
       '#default_value' => $config->get('excluded_ids'),
     ];
 
@@ -77,9 +99,10 @@ class CriticalCssSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = \Drupal::service('config.factory')->getEditable('critical_css.settings');
+    $config = $this->config('critical_css.settings');
     $config
       ->set('enabled', $form_state->getValue('critical_css_enabled'))
+      ->set('enabled_for_logged_in_users', $form_state->getValue('critical_css_enabled_for_logged_in_users'))
       ->set('dir_path', $form_state->getValue('critical_css_dir_path'))
       ->set('excluded_ids', $form_state->getValue('critical_css_excluded_ids'))
       ->save();

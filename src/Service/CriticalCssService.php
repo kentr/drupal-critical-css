@@ -2,10 +2,56 @@
 
 namespace Drupal\critical_css\Service;
 
+use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Routing\CurrentRouteMatch;
+use Drupal\Core\Path\CurrentPathStack;
+use Drupal\Core\Session\AccountProxy;
+
 /**
  * Gets a node's critical CSS.
  */
+/**
+ * Class CriticalCssService.
+ *
+ * @package Drupal\critical_css\Service
+ */
 class CriticalCssService {
+
+  /**
+   * Config Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $configFactory;
+
+  /**
+   * Request.
+   *
+   * @var \Symfony\Component\HttpFoundation\Request
+   */
+  protected $request;
+
+  /**
+   * Current Route Match.
+   *
+   * @var \Drupal\Core\Routing\CurrentRouteMatch
+   */
+  protected $currentRouteMatch;
+
+  /**
+   * Current path stack.
+   *
+   * @var \Drupal\Core\Path\CurrentPathStack
+   */
+  protected $currentPathStack;
+
+  /**
+   * Current user.
+   *
+   * @var \Drupal\Core\Session\AccountProxy
+   */
+  protected $currentUser;
 
   /**
    * Flag set when this request has already been processed.
@@ -36,7 +82,38 @@ class CriticalCssService {
   protected $matchedFilePath;
 
   /**
-   * {@inheritdoc}
+   * CriticalCssService constructor.
+   *
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *   Request.
+   * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   *   Config Factory.
+   * @param \Drupal\Core\Routing\CurrentRouteMatch $currentRouteMatch
+   *   Current route.
+   * @param \Drupal\Core\Path\CurrentPathStack $currentPathStack
+   *   Current path.
+   * @param \Drupal\Core\Session\AccountProxy $currentUser
+   *   Current user.
+   */
+  public function __construct(
+    RequestStack $requestStack,
+    ConfigFactory $configFactory,
+    CurrentRouteMatch $currentRouteMatch,
+    CurrentPathStack $currentPathStack,
+    AccountProxy $currentUser
+  ) {
+    $this->request = $requestStack->getCurrentRequest();
+    $this->configFactory = $configFactory;
+    $this->currentRouteMatch = $currentRouteMatch;
+    $this->currentPathStack = $currentPathStack;
+    $this->currentUser = $currentUser;
+  }
+
+  /**
+   * Get critical css contents.
+   *
+   * @return string
+   *   The critical css contents
    */
   public function getCriticalCss() {
 
@@ -59,7 +136,7 @@ class CriticalCssService {
   }
 
   /**
-   * Get if this request has already been processed.
+   * Tells if this request has already been processed.
    *
    * @return bool
    *   True if this request has already been processed.
@@ -85,8 +162,19 @@ class CriticalCssService {
    *   True if this module is enabled
    */
   public function isEnabled() {
-    $config = \Drupal::config('critical_css.settings');
+    $config = $this->configFactory->get('critical_css.settings');
     return (bool) $config->get('enabled');
+  }
+
+  /**
+   * Check if module is enabled for logged-in users.
+   *
+   * @return bool
+   *   True if this module is enabled for logged-in users.
+   */
+  public function isEnabledForLoggedInUsers() {
+    $config = $this->configFactory->get('critical_css.settings');
+    return (bool) $config->get('enabled_for_logged_in_users');
   }
 
   /**
@@ -96,10 +184,10 @@ class CriticalCssService {
    *   Entity ID (integer).
    *
    * @return bool
-   *   True if entity is excluded
+   *   True if entity is excluded.
    */
   public function isEntityIdExcluded($entityId) {
-    $config = \Drupal::config('critical_css.settings');
+    $config = $this->configFactory->get('critical_css.settings');
     $excludedIds = explode("\n", $config->get('excluded_ids'));
     $excludedIds = array_map(function ($item) {
       return trim($item);
@@ -124,9 +212,9 @@ class CriticalCssService {
       return NULL;
     }
 
-    $themeName = \Drupal::config('system.theme')->get('default');
+    $themeName = $this->configFactory->get('system.theme')->get('default');
     $themePath = drupal_get_path('theme', $themeName);
-    $criticalCssDirPath = str_replace('..', '', \Drupal::config('critical_css.settings')
+    $criticalCssDirPath = str_replace('..', '', $this->configFactory->get('critical_css.settings')
       ->get('dir_path'));
     $criticalCssDir = $themePath . '/' . $criticalCssDirPath;
 
@@ -140,24 +228,24 @@ class CriticalCssService {
    *   Array with all possible paths.
    */
   public function getFilePaths() {
+    // Check if module is enabled.
+    if (!$this->isEnabled()) {
+      // Empty array.
+      return $this->filePaths;
+    }
+
+    // Check if module is enabled for logged-in users.
+    if (!$this->currentUser->isAnonymous() && !$this->isEnabledForLoggedInUsers()) {
+      // Empty array.
+      return $this->filePaths;
+    }
+
     // Return previous result, if any.
     if ($this->isAlreadyProcessed() && count($this->filePaths)) {
       return $this->filePaths;
     }
 
     $this->setAlreadyProcessed(TRUE);
-
-    // Critical CSS is generated emulating an anonymous visit, so this service
-    // is disabled for non-anonymous visits.
-    // TODO QUITAR COMMENT
-    /* if (!\Drupal::currentUser()->isAnonymous()) {
-    return $this->filePaths;
-    }*/
-
-    // Check if module is enabled.
-    if (!$this->isEnabled()) {
-      return $this->filePaths;
-    }
 
     $entity = NULL;
     $entityId = NULL;
@@ -169,7 +257,7 @@ class CriticalCssService {
     // Try node and taxonomy_term.
     $entitiesToTry = ['node', 'taxonomy_term'];
     foreach ($entitiesToTry as $entityToTry) {
-      $entity = \Drupal::routeMatch()->getParameter($entityToTry);
+      $entity = $this->currentRouteMatch->getParameter($entityToTry);
       if ($entity) {
         break;
       }
@@ -181,7 +269,7 @@ class CriticalCssService {
     }
 
     // Get $sanitizedPath.
-    $currentPath = \Drupal::service('path.current')->getPath();
+    $currentPath = $this->currentPathStack->getPath();
     $sanitizedPath = preg_replace("/^\//", "", $currentPath);
     $sanitizedPath = preg_replace("/[^a-zA-Z0-9\/-]/", "", $sanitizedPath);
     $sanitizedPath = str_replace("/", "-", $sanitizedPath);
@@ -190,7 +278,7 @@ class CriticalCssService {
     }
 
     // Get $sanitizedPathInfo.
-    $requestUri = \Drupal::request()->getPathInfo();
+    $requestUri = $this->request->getPathInfo();
     $sanitizedPathInfo = preg_replace("/^\//", "", $requestUri);
     $sanitizedPathInfo = preg_replace("/[^a-zA-Z0-9\/-]/", "", $sanitizedPathInfo);
     $sanitizedPathInfo = str_replace("/", "-", $sanitizedPathInfo);

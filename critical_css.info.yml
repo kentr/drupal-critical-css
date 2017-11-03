@@ -3,6 +3,4 @@ description: Inlines a critical CSS file in HTML head, and loads non-critical CS
 package: Page Speed Optimization
 type: module
 configure: critical_css.settings
-
 core: 8.x
-version: 1.0
