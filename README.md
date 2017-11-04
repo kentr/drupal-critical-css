@@ -27,7 +27,8 @@ critical css of any page.
 Using Addy Osmani's [critical](https://github.com/addyosmani/critical) 
 package is highly recommended.
  
-Another option is [Filament Group's criticalCSS](https://github.com/filamentgroup/criticalCSS).
+Another option is Filament Group's 
+[criticalCSS](https://github.com/filamentgroup/criticalCSS).
  
 The extracted critical css must be saved in a directory inside the 
 current theme.
@@ -137,8 +138,8 @@ enabled, they will be downloaded during the installation process,
 and be placed into public://critical_css directory 
 (typically sites/default/files/critical_css). 
 If allow_url_fopen() is not enabled, you should manually download 
-[loadCSS.min.js](https://github.com/filamentgroup/loadCSS/releases/download/v1.3.1/loadCSS.min.js) 
-and [cssrelpreload.min.js](https://github.com/filamentgroup/loadCSS/releases/download/v1.3.1/cssrelpreload.min.js) 
+loadCSS.min.js and cssrelpreload.min.js files from 
+https://github.com/filamentgroup/loadCSS/releases/v1.3.1/
 and place them into that directory.
 
 ### Module configuration ###
