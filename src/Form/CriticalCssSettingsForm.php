@@ -21,7 +21,7 @@ class CriticalCssSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return ['critical_css'];
+    return ['critical_css.settings'];
   }
 
   /**
