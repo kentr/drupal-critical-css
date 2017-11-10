@@ -219,7 +219,7 @@ class CriticalCssService {
       '',
       $this->configFactory->get('critical_css.settings')->get('dir_path')
     );
-    $criticalCssDir = $themePath . '/' . $criticalCssDirPath;
+    $criticalCssDir = $themePath . $criticalCssDirPath;
 
     return $criticalCssDir . '/' . $key . '.css';
   }
