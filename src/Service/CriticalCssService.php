@@ -130,6 +130,7 @@ class CriticalCssService {
       if (is_file($filePath)) {
         $this->criticalCss = trim(file_get_contents($filePath));
         $this->matchedFilePath = $filePath;
+        break;
       }
     }
     return $this->criticalCss;
