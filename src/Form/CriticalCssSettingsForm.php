@@ -42,7 +42,6 @@ class CriticalCssSettingsForm extends ConfigFormBase {
         ),
         'error'
       );
-
     }
 
     $form['critical_css_enabled'] = [
@@ -80,7 +79,7 @@ class CriticalCssSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Critical CSS files base directory (relative to %theme_path)', ['%theme_path' => drupal_get_path('theme', $this->config('system.theme')->get('default'))]),
       '#required' => TRUE,
-      '#description' => $this->t('Enter a directory path relative to current theme, where critical CSS files are located (e.g., css/critical). Inside that directory, "Critical CSS" will try to find any file named "{bundle_type}.css", "{entity_id}.css" or "{url}.css" (e.g., article.css, 1234.css, my-page-url.css, etc)'),
+      '#description' => $this->t('Must start with a leading slash. Enter a directory path relative to current theme, where critical CSS files are located (e.g., /css/critical). Inside that directory, "Critical CSS" will try to find any file named "{bundle_type}.css", "{entity_id}.css" or "{url}.css" (e.g., article.css, 1234.css, my-page-url.css, etc)'),
       '#default_value' => $config->get('dir_path'),
     ];
 
@@ -93,6 +92,18 @@ class CriticalCssSettingsForm extends ConfigFormBase {
     ];
 
     return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $criticalCssDirPath = $form_state->getValue('critical_css_dir_path');
+      if (substr($criticalCssDirPath, 0, 1) != '/') {
+        $form_state->setErrorByName(
+          'critical_css_dir_path',
+          $this->t('Critical CSS files base directory must start with a leading slash.'));
+      }
   }
 
   /**

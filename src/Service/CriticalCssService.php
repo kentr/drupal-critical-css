@@ -214,8 +214,11 @@ class CriticalCssService {
 
     $themeName = $this->configFactory->get('system.theme')->get('default');
     $themePath = drupal_get_path('theme', $themeName);
-    $criticalCssDirPath = str_replace('..', '', $this->configFactory->get('critical_css.settings')
-      ->get('dir_path'));
+    $criticalCssDirPath = str_replace(
+      '..',
+      '',
+      $this->configFactory->get('critical_css.settings')->get('dir_path')
+    );
     $criticalCssDir = $themePath . '/' . $criticalCssDirPath;
 
     return $criticalCssDir . '/' . $key . '.css';
