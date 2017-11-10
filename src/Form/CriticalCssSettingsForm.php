@@ -31,7 +31,7 @@ class CriticalCssSettingsForm extends ConfigFormBase {
     $config = $this->config('critical_css.settings');
 
     if (!is_file('public://critical_css/loadCSS.min.js') ||
-        !is_file('public://critical_css/cssrelpreload.min.js')) {
+      !is_file('public://critical_css/cssrelpreload.min.js')) {
       drupal_set_message(
         $this->t(
           'Some Critical CSS libraries are missing. You should manually download Filament Group\'s <a href="@url1">loadCSS.min.js</a> and <a href="@url1">cssrelpreload.min.js</a> and place them into public://critical_css (typically sites/default/files/critical_css)',
@@ -99,11 +99,11 @@ class CriticalCssSettingsForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $criticalCssDirPath = $form_state->getValue('critical_css_dir_path');
-      if (substr($criticalCssDirPath, 0, 1) != '/') {
-        $form_state->setErrorByName(
-          'critical_css_dir_path',
-          $this->t('Critical CSS files base directory must start with a leading slash.'));
-      }
+    if (substr($criticalCssDirPath, 0, 1) != '/') {
+      $form_state->setErrorByName(
+        'critical_css_dir_path',
+        $this->t('Critical CSS files base directory must start with a leading slash.'));
+    }
   }
 
   /**
