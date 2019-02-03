@@ -318,6 +318,11 @@ class CriticalCssService {
       $this->filePaths[] = $filePathByBundleName;
     }
 
+    // Search for default fallback CSS
+    if ($filePathDefault = $this->getFilePathByKey('critical-css-default')) {
+      $this->filePaths[] = $filePathDefault;
+    }
+
     return $this->filePaths;
   }
 

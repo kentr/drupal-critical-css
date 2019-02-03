@@ -9,30 +9,31 @@ asynchronously using W3C Spec's preload.
     * bundle type (i.e., "article.css")
     * entity id (i.e., "123.css")
     * url (i.e., "my-article.css")
+    * The default fallback filename: "critical-css-default.css"
  * If any of the above paths is found, it's contents are loaded as
    a string inside a _style_ tag placed into the HTML head.
- * Any other CSS file used in the HTML head is loaded using 
-   [preload](https://www.w3.org/TR/preload/). For browsers not supporting 
+ * Any other CSS file used in the HTML head is loaded using
+   [preload](https://www.w3.org/TR/preload/). For browsers not supporting
    this preload feature, a polyfill is provided.
 
 ### Gulp task for generating a css file ###
-Before this module can do anything, you should generate the critical css 
+Before this module can do anything, you should generate the critical css
 of the page. That css filename should match any of:
  * bundle type (i.e., "article.css")
  * entity id (i.e., "123.css")
  * url (i.e., "my-article.css")
- 
-This can be achieved by running a Gulp task to automatically extract the 
+
+This can be achieved by running a Gulp task to automatically extract the
 critical css of any page.
-Using Addy Osmani's [critical](https://github.com/addyosmani/critical) 
+Using Addy Osmani's [critical](https://github.com/addyosmani/critical)
 package is highly recommended.
- 
-Another option is Filament Group's 
+
+Another option is Filament Group's
 [criticalCSS](https://github.com/filamentgroup/criticalCSS).
- 
-The extracted critical css must be saved in a directory inside the 
+
+The extracted critical css must be saved in a directory inside the
 current theme.
- 
+
 #### Sample gulp task using Addy Osmani's critical  ####
 
 ```javascript
@@ -73,26 +74,26 @@ gulp.task('critical', ['critical:clean'], function (done) {
   Object.keys(config.critical.urls).map(function (url, index) {
     var pageUrl = urljoin(configLocal.critical.baseDomain, url);
     var destCssPath = path.join(
-      process.cwd(), 
-      config.critical.dest, 
+      process.cwd(),
+      config.critical.dest,
       config.critical.urls[url] + '.css'
       );
 
     return rp({uri: pageUrl, strictSSL: false}).then(function (body) {
       var htmlString = body
         .replace(
-          /href="\//g, 
+          /href="\//g,
           'href="' + urljoin(configLocal.critical.baseDomain, '/')
           )
         .replace(
-          /src="\//g, 
+          /src="\//g,
           'src="' + urljoin(configLocal.critical.baseDomain, '/')
           );
 
       gutil.log(
-        'Generating critical css', 
-        gutil.colors.magenta(destCssPath), 
-        'from', 
+        'Generating critical css',
+        gutil.colors.magenta(destCssPath),
+        'from',
         pageUrl
         );
 
@@ -119,8 +120,8 @@ gulp.task('critical:clean', function (done) {
   'use strict';
   return rimraf(config.critical.dest, function () {
     gutil.log(
-      'Critical directory', 
-      gutil.colors.magenta(config.critical.dest), 
+      'Critical directory',
+      gutil.colors.magenta(config.critical.dest),
       'deleted'
       );
     return done();
@@ -130,22 +131,22 @@ gulp.task('critical:clean', function (done) {
 ```
 
 ### Third-party libraries ###
-Critical CSS uses two files from 
-[Filament Group's loadCSS](https://github.com/filamentgroup/loadCSS). 
-If your PHP installation has 
-[allow_url_fopen()](http://php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen) 
-enabled, they will be downloaded during the installation process, 
-and be placed into public://critical_css directory 
-(typically sites/default/files/critical_css). 
-If allow_url_fopen() is not enabled, you should manually download 
-loadCSS.min.js and cssrelpreload.min.js files from 
+Critical CSS uses two files from
+[Filament Group's loadCSS](https://github.com/filamentgroup/loadCSS).
+If your PHP installation has
+[allow_url_fopen()](http://php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen)
+enabled, they will be downloaded during the installation process,
+and be placed into public://critical_css directory
+(typically sites/default/files/critical_css).
+If allow_url_fopen() is not enabled, you should manually download
+loadCSS.min.js and cssrelpreload.min.js files from
 https://github.com/filamentgroup/loadCSS/releases/v1.3.1/
 and place them into that directory.
 
 ### Module configuration ###
-It must be enabled in /admin/config/development/performance/critical-css. 
+It must be enabled in /admin/config/development/performance/critical-css.
 This allows for easy enabling/disabling without uninstalling it.
 
 ### Debugging ###
-When twig debug is enabled, Critical CSS will show all the possible 
+When twig debug is enabled, Critical CSS will show all the possible
 file paths that is trying to find inside a css comment.
