@@ -91,6 +91,13 @@ class CriticalCssSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('excluded_ids'),
     ];
 
+    $form['critical_css_defer'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Defer'),
+      '#default_value' => $config->get('defer'),
+      '#description' => $this->t("Defer non-critical css to load asynchronously? If you use another defer option, you should leave this disabled."),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -116,6 +123,7 @@ class CriticalCssSettingsForm extends ConfigFormBase {
       ->set('enabled_for_logged_in_users', $form_state->getValue('critical_css_enabled_for_logged_in_users'))
       ->set('dir_path', $form_state->getValue('critical_css_dir_path'))
       ->set('excluded_ids', $form_state->getValue('critical_css_excluded_ids'))
+      ->set('defer', $form_state->getValue('critical_css_defer'))
       ->save();
 
     parent::submitForm($form, $form_state);

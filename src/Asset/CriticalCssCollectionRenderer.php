@@ -20,7 +20,9 @@ class CriticalCssCollectionRenderer extends CssCollectionRenderer {
 
     // Get critical CSS and change parent's output if needed.
     $criticalCss = \Drupal::service('critical_css')->getCriticalCss();
-    if ($criticalCss) {
+    $defer = \Drupal::service('critical_css')->isDeferred();
+
+    if ($criticalCss && $defer) {
       foreach ($elements as $key => $element) {
         // Add a fallback element at the end of $elements, for non-JS browsers.
         $noScriptElement = $element;

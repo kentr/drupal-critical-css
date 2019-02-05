@@ -157,6 +157,17 @@ class CriticalCssService {
   }
 
   /**
+   * Check if defer configuration option is set.
+   *
+   * @return bool
+   *   True if the defer configuration option is set, false otherwise.
+   */
+  public function isDeferred() {
+    $config = $this->configFactory->get('critical_css.settings');
+    return (bool) $config->get('defer');
+  }
+
+  /**
    * Check if module is enabled.
    *
    * @return bool
